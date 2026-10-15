@@ -171,12 +171,7 @@ dialog::backdrop{background:rgba(22,33,62,.45)}
 
   <div class="ajustes">
     <label id="avisosBox"><input type="checkbox" id="avisosOn"> Avisarme antes de cada parcial (3 días antes, 1 día antes y el mismo día)</label>
-    <div>Tus datos se guardan en este navegador.</div>
-    <div class="acts">
-      <button class="btn small" id="exp">Descargar respaldo</button>
-      <button class="btn small" id="impBtn">Cargar respaldo</button>
-      <input type="file" id="imp" accept="application/json" hidden>
-    </div>
+    <div>Tus datos se guardan solos en este dispositivo cada vez que agregás o cambiás algo.</div>
   </div>
 </div>
 
@@ -402,19 +397,6 @@ async function imagen(){
   },'image/png');
 }
 $('#btnImg').onclick=imagen;
-
-/* ---------- Respaldo ---------- */
-$('#exp').onclick=()=>{
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));
-  a.download='agenda-facultad-respaldo.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-};
-$('#impBtn').onclick=()=>$('#imp').click();
-$('#imp').onchange=async e=>{
-  try{const d=JSON.parse(await e.target.files[0].text()); if(!d.materias||!d.parciales) throw 0;
-    if(confirm('Esto reemplaza lo que tenés cargado. ¿Seguir?')){S=d;save();render();}}
-  catch(err){alert('Ese archivo no parece un respaldo de la agenda.');}
-  e.target.value='';
-};
 
 function render(){renderMaterias();renderLista();renderCal();renderAviso();}
 render(); avisar();

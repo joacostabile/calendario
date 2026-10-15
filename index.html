@@ -172,11 +172,7 @@ const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.materias) return s;}catch(e){}
-  return {materias:[
-    {id:uid(),nombre:'Análisis Matemático II',color:'#2b59ff'},
-    {id:uid(),nombre:'Arquitectura de Computadoras',color:'#b4457a'},
-    {id:uid(),nombre:'Estructura de Datos',color:'#0f766e'}
-  ],parciales:[]};
+  return {materias:[],parciales:[]};
 }
 let S=load(), mes=new Date(); mes.setDate(1);
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -217,7 +213,7 @@ function tarjeta(p){
 function renderLista(){
   const h=hoy(), o=ordenados();
   const prox=o.filter(p=>dia(p.fecha)>=h), pas=o.filter(p=>dia(p.fecha)<h).reverse();
-  $('#prox').innerHTML=prox.length?prox.map(tarjeta).join(''):'<div class="empty">No tenés parciales cargados. Tocá “Agregar parcial” para empezar.</div>';
+  $('#prox').innerHTML=prox.length?prox.map(tarjeta).join(''):(S.materias.length?'<div class="empty">No tenés parciales cargados. Tocá “Agregar parcial” para empezar.</div>':'<div class="empty">Para empezar, cargá tus materias en la pestaña Materias. Después podés agregar tus parciales.</div>');
   $('#pasados').innerHTML=pas.map(p=>tarjeta(p).replace('class="card parcial"','class="card parcial past"')).join('');
   $('#pasadosBox').hidden=!pas.length;
 }
@@ -380,6 +376,7 @@ $('#imp').onchange=async e=>{
 
 function render(){renderMaterias();renderLista();renderCal();renderAviso();}
 render(); avisar();
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>

@@ -85,6 +85,11 @@ dialog::backdrop{background:rgba(22,33,62,.45)}
 #toast.on{opacity:1}#toast.mal{background:var(--warn)}
 .instalar{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;color:var(--ink)}
 .instalar p{margin:4px 0 8px}
+.seg{display:flex;gap:6px;margin:10px 0 6px}
+.seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.pasos{padding-left:22px;margin:10px 0 14px}
+.pasos li{margin-bottom:12px}
+.nota{background:#e8f1f0;border-radius:10px;padding:10px 12px;font-size:.93rem;margin:0}
 @media(prefers-reduced-motion:no-preference){.view.on{animation:in .18s ease-out}@keyframes in{from{opacity:0}to{opacity:1}}}
 </style>
 </head>
@@ -98,6 +103,7 @@ dialog::backdrop{background:rgba(22,33,62,.45)}
   <nav role="tablist">
     <button role="tab" data-v="agenda" aria-selected="true">Agenda</button>
     <button role="tab" data-v="materias" aria-selected="false">Materias</button>
+    <button role="tab" data-v="instalar" id="tabInst" aria-selected="false">📲 Instalar app</button>
   </nav>
 
   <!-- AGENDA -->
@@ -134,13 +140,36 @@ dialog::backdrop{background:rgba(22,33,62,.45)}
     </div>
   </section>
 
-  <div class="ajustes">
-    <div class="instalar" id="instalar" hidden>
-      <strong>Instalar como app</strong>
-      <p id="instAndroid" hidden>Tocá “Instalar app”. Si no aparece el botón, abrí el menú ⋮ de Chrome y elegí “Instalar app” o “Agregar a pantalla de inicio”.</p>
-      <p id="instIos" hidden>En iPhone abrí esta página en Safari, tocá Compartir y elegí “Agregar a inicio”. Instalala antes de cargar tus datos, porque la app instalada guarda sus datos aparte de Safari.</p>
-      <button class="btn main small" id="btnInst" hidden>Instalar app</button>
+  <!-- INSTALAR -->
+  <section class="view" id="v-instalar">
+    <div class="card">
+      <h2>Instalar la app en tu celular</h2>
+      <p class="hint" style="margin-top:0">Es gratis y no pasa por ninguna tienda. Queda con su ícono en la pantalla de inicio y funciona sin internet.</p>
+      <div class="seg"><button class="btn" data-g="ios">iPhone</button><button class="btn" data-g="and">Android</button></div>
+      <div id="gIos">
+        <ol class="pasos">
+          <li><strong>Abrí esta página en Safari.</strong> Si estás en otro navegador, copiá el link y pegalo en Safari.</li>
+          <li><strong>Tocá Compartir:</strong> el cuadradito con una flecha hacia arriba, abajo en el medio de la pantalla.</li>
+          <li><strong>Deslizá hacia abajo y tocá “Agregar a inicio”.</strong></li>
+          <li><strong>Tocá “Agregar”,</strong> arriba a la derecha. El ícono queda en tu pantalla de inicio.</li>
+          <li><strong>Abrila desde ese ícono</strong> y cargá ahí tus materias.</li>
+        </ol>
+        <p class="nota">Instalala antes de cargar tus datos. La app instalada guarda sus datos aparte de Safari, así que lo que cargaste en Safari no aparece en ella.</p>
+      </div>
+      <div id="gAnd" hidden>
+        <ol class="pasos">
+          <li><strong>Abrí esta página en Chrome.</strong></li>
+          <li><strong>Tocá el botón “Instalar app”</strong> de abajo, si aparece. Si no aparece, tocá el menú ⋮ arriba a la derecha.</li>
+          <li><strong>Elegí “Instalar app”.</strong> En algunos celulares dice “Agregar a pantalla de inicio”.</li>
+          <li><strong>Confirmá con “Instalar”.</strong> El ícono queda en tu pantalla de inicio.</li>
+          <li><strong>Abrila desde ese ícono</strong> y cargá tus materias.</li>
+        </ol>
+        <button class="btn main" id="btnInst" hidden>Instalar app</button>
+      </div>
     </div>
+  </section>
+
+  <div class="ajustes">
     <label id="avisosBox"><input type="checkbox" id="avisosOn"> Avisarme antes de cada parcial (3 días antes, 1 día antes y el mismo día)</label>
     <div>Tus datos se guardan en este navegador.</div>
     <div class="acts">
@@ -392,10 +421,13 @@ render(); avisar();
 if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 let dp=null;
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-if(!standalone){
-  $('#instalar').hidden=false;
-  if(/iphone|ipad|ipod/i.test(navigator.userAgent)) $('#instIos').hidden=false; else $('#instAndroid').hidden=false;
+if(standalone) $('#tabInst').hidden=true;
+function guia(k){
+  $$('[data-g]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===k));
+  $('#gIos').hidden=k!=='ios'; $('#gAnd').hidden=k!=='and';
 }
+$$('[data-g]').forEach(b=>b.onclick=()=>guia(b.dataset.g));
+guia(/iphone|ipad|ipod/i.test(navigator.userAgent)?'ios':'and');
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('#btnInst').hidden=false;});
 $('#btnInst').onclick=async()=>{if(!dp)return;dp.prompt();try{await dp.userChoice}catch(e){}dp=null;$('#btnInst').hidden=true;};
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});

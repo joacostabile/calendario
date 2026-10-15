@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agenda de parciales</title>
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Parciales">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7f7;--card:#fff;--ink:#16213e;--soft:#5b6578;--line:#d9e2e2;--acc:#0f766e;--acc-ink:#fff;--warn:#b42318;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #7dd3c8;outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:1.6rem;margin:0}
+h2{font-size:1.1rem;margin:0 0 10px}
+.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:10px;font-weight:600}
+.btn:hover{border-color:var(--acc)}
+.btn.main{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn.small{padding:4px 10px;font-size:.88rem}
+.btn.danger{color:var(--warn)}
+nav{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+nav button{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--soft);border-bottom:3px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--acc);border-bottom-color:var(--acc)}
+.view{display:none}.view.on{display:block}
+.aviso{background:#fff4e5;border:1px solid #f3c98b;border-radius:var(--r);padding:12px 14px;margin-bottom:16px}
+.aviso strong{display:block;margin-bottom:2px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.top h2{margin:0}
+.grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.parcial{display:grid;grid-template-columns:6px 1fr;gap:12px;margin-bottom:10px;padding:0;overflow:hidden}
+.parcial .bar{background:var(--c)}
+.parcial .body{padding:12px 12px 12px 0}
+.parcial h3{margin:0;font-size:1.05rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.chip{font-size:.8rem;font-weight:600;padding:2px 9px;border-radius:99px;background:#e8f1f0;color:#0b4f49}
+.chip.virtual{background:#e7ecff;color:#2a3fa6}
+.when{font-weight:600}
+.count{color:var(--acc);font-weight:700}
+.count.hoy{color:var(--warn)}
+.temas{color:var(--soft);font-size:.93rem;margin:4px 0 8px;white-space:pre-wrap}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.past{opacity:.7}
+.empty{color:var(--soft);padding:18px;text-align:center;border:1px dashed var(--line);border-radius:var(--r)}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.calhead strong{text-transform:capitalize}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal .dow{font-size:.78rem;color:var(--soft);font-weight:600}
+.cal button{border:1px solid transparent;background:#f4f7f7;border-radius:8px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.9rem;padding:0}
+.cal button:hover{border-color:var(--acc)}
+.cal button.hoy{border-color:var(--ink);font-weight:700}
+.cal .vacio{background:none;border:0;pointer-events:none}
+.dots{display:flex;gap:2px;height:7px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.hint{color:var(--soft);font-size:.85rem;margin:8px 0 0}
+label{display:block;font-weight:600;font-size:.9rem;margin:10px 0 4px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+input[type=color]{padding:2px;height:38px;width:60px}
+input[type=checkbox]{width:auto}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog{border:0;border-radius:16px;padding:20px;width:min(480px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(22,33,62,.45)}
+.mat{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mat:last-child{border:0}
+.sw{width:14px;height:14px;border-radius:50%;background:var(--c);flex:none}
+.mat span.n{flex:1;font-weight:600}
+.mat small{color:var(--soft)}
+.ajustes{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);color:var(--soft);font-size:.9rem}
+.ajustes .acts{margin-top:8px}
+.ajustes label{display:flex;align-items:center;gap:8px;font-weight:500;margin:0 0 8px;color:var(--ink)}
+@media(prefers-reduced-motion:no-preference){.view.on{animation:in .18s ease-out}@keyframes in{from{opacity:0}to{opacity:1}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📅 Agenda de parciales</h1>
+    <button class="btn main" id="btnNuevo">Agregar parcial</button>
+  </header>
+
+  <nav role="tablist">
+    <button role="tab" data-v="agenda" aria-selected="true">Agenda</button>
+    <button role="tab" data-v="materias" aria-selected="false">Materias</button>
+  </nav>
+
+  <!-- AGENDA -->
+  <section class="view on" id="v-agenda">
+    <div class="aviso" id="aviso" hidden></div>
+    <div class="grid">
+      <div>
+        <div class="top"><h2>Próximos</h2><button class="btn small" id="btnImg">Descargar imagen</button></div>
+        <div id="prox"></div>
+        <details id="pasadosBox" hidden><summary>Anteriores</summary><div id="pasados" style="margin-top:10px"></div></details>
+      </div>
+      <aside class="card">
+        <div class="calhead">
+          <button class="btn small" id="mesPrev" aria-label="Mes anterior">‹</button>
+          <strong id="mesTitulo"></strong>
+          <button class="btn small" id="mesNext" aria-label="Mes siguiente">›</button>
+        </div>
+        <div class="cal" id="cal"></div>
+        <p class="hint">Tocá un día para agregar un parcial en esa fecha.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- MATERIAS -->
+  <section class="view" id="v-materias">
+    <div class="card">
+      <h2>Mis materias</h2>
+      <div id="listaMaterias"></div>
+      <div class="row" style="grid-template-columns:1fr auto auto;align-items:end;margin-top:12px">
+        <div><label for="mNombre" style="margin-top:0">Nueva materia</label><input id="mNombre" placeholder="Ej: Física I"></div>
+        <div><label for="mColor" style="margin-top:0">Color</label><input type="color" id="mColor" value="#2b59ff"></div>
+        <button class="btn main" id="mAdd">Agregar</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="ajustes">
+    <label id="avisosBox"><input type="checkbox" id="avisosOn"> Avisarme antes de cada parcial (3 días antes, 1 día antes y el mismo día)</label>
+    <div>Tus datos se guardan en este navegador.</div>
+    <div class="acts">
+      <button class="btn small" id="exp">Descargar respaldo</button>
+      <button class="btn small" id="impBtn">Cargar respaldo</button>
+      <input type="file" id="imp" accept="application/json" hidden>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form id="frm">
+    <h2 id="dlgTitulo">Agregar parcial</h2>
+    <label for="fMat">Materia</label><select id="fMat" required></select>
+    <div class="row">
+      <div><label for="fTipo">Tipo</label><select id="fTipo"></select></div>
+      <div><label for="fMod">Modalidad</label><select id="fMod"><option>Presencial</option><option>Virtual</option></select></div>
+    </div>
+    <div class="row">
+      <div><label for="fFecha">Fecha</label><input type="date" id="fFecha" required></div>
+      <div><label for="fHora">Hora</label><input type="time" id="fHora"></div>
+    </div>
+    <label for="fLugar">Aula o link</label><input id="fLugar" placeholder="Ej: Aula 304 o link de Meet">
+    <label for="fTemas">Temas</label><textarea id="fTemas" rows="3" placeholder="Ej: Integrales dobles, cambio de variables"></textarea>
+    <label for="fNota">Nota (cuando la tengas)</label><input id="fNota" placeholder="Ej: 7">
+    <div class="acts" style="margin-top:16px;justify-content:flex-end">
+      <button type="button" class="btn" id="fCancel">Cancelar</button>
+      <button type="submit" class="btn main">Guardar parcial</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const KEY='agendaFacultad.v1', KAV='agendaFacultad.avisos';
+const TIPOS=['1er parcial','2do parcial','Recuperatorio 1er parcial','Recuperatorio 2do parcial','Final'];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.materias) return s;}catch(e){}
+  return {materias:[
+    {id:uid(),nombre:'Análisis Matemático II',color:'#2b59ff'},
+    {id:uid(),nombre:'Arquitectura de Computadoras',color:'#b4457a'},
+    {id:uid(),nombre:'Estructura de Datos',color:'#0f766e'}
+  ],parciales:[]};
+}
+let S=load(), mes=new Date(); mes.setDate(1);
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const mat=id=>S.materias.find(m=>m.id===id)||{nombre:'(materia borrada)',color:'#888'};
+const dia=f=>{const[y,m,d]=f.split('-').map(Number);return new Date(y,m-1,d)};
+const hoy=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt=f=>dia(f).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+const dias=f=>Math.round((dia(f)-hoy())/864e5);
+function faltan(f){
+  const n=dias(f);
+  if(n===0) return ['Hoy','hoy']; if(n===1) return ['Mañana','']; if(n>1) return ['En '+n+' días',''];
+  return ['Hace '+(-n)+(n===-1?' día':' días'),''];
+}
+const ordenados=()=>[...S.parciales].sort((a,b)=>(a.fecha+(a.hora||'')).localeCompare(b.fecha+(b.hora||'')));
+
+/* ---------- Tabs ---------- */
+function ver(v){
+  $$('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));
+  $$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+}
+$$('nav button').forEach(b=>b.onclick=()=>ver(b.dataset.v));
+
+/* ---------- Lista de parciales ---------- */
+function tarjeta(p){
+  const m=mat(p.materia), [txt,cl]=faltan(p.fecha);
+  return `<article class="card parcial" style="--c:${esc(m.color)}"><div class="bar"></div><div class="body">
+    <h3>${esc(m.nombre)}</h3>
+    <div class="chips"><span class="chip">${esc(p.tipo)}</span><span class="chip ${p.modalidad==='Virtual'?'virtual':''}">${esc(p.modalidad)}</span>${p.nota?`<span class="chip">Nota: ${esc(p.nota)}</span>`:''}</div>
+    <div><span class="when">${esc(fmt(p.fecha))}${p.hora?' · '+esc(p.hora)+' hs':''}</span> — <span class="count ${cl}">${txt}</span></div>
+    ${p.lugar?`<div class="temas">📍 ${esc(p.lugar)}</div>`:''}
+    ${p.temas?`<div class="temas">${esc(p.temas)}</div>`:''}
+    <div class="acts">
+      <button class="btn small" data-a="editar" data-id="${p.id}">Editar</button>
+      <button class="btn small danger" data-a="borrar" data-id="${p.id}">Borrar</button>
+    </div></div></article>`;
+}
+function renderLista(){
+  const h=hoy(), o=ordenados();
+  const prox=o.filter(p=>dia(p.fecha)>=h), pas=o.filter(p=>dia(p.fecha)<h).reverse();
+  $('#prox').innerHTML=prox.length?prox.map(tarjeta).join(''):'<div class="empty">No tenés parciales cargados. Tocá “Agregar parcial” para empezar.</div>';
+  $('#pasados').innerHTML=pas.map(p=>tarjeta(p).replace('class="card parcial"','class="card parcial past"')).join('');
+  $('#pasadosBox').hidden=!pas.length;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]'); if(!b) return;
+  const p=S.parciales.find(x=>x.id===b.dataset.id); if(!p) return;
+  if(b.dataset.a==='editar') abrirForm(p);
+  if(b.dataset.a==='borrar'&&confirm('¿Borrar este parcial?')){S.parciales=S.parciales.filter(x=>x.id!==p.id);save();render();}
+});
+
+/* ---------- Aviso en pantalla ---------- */
+function renderAviso(){
+  const cerca=ordenados().filter(p=>dias(p.fecha)>=0&&dias(p.fecha)<=3);
+  const box=$('#aviso'); box.hidden=!cerca.length;
+  if(!cerca.length) return;
+  box.innerHTML='<strong>⏰ Parciales cerca</strong>'+cerca.map(p=>`${esc(faltan(p.fecha)[0])}: ${esc(mat(p.materia).nombre)} (${esc(p.tipo)})${p.hora?' a las '+esc(p.hora):''}`).join('<br>');
+}
+
+/* ---------- Calendario ---------- */
+function renderCal(){
+  $('#mesTitulo').textContent=mes.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+  const y=mes.getFullYear(), m=mes.getMonth(), ini=(new Date(y,m,1).getDay()+6)%7, total=new Date(y,m+1,0).getDate();
+  let h=['L','M','M','J','V','S','D'].map(d=>`<div class="dow">${d}</div>`).join('')+'<button class="vacio" tabindex="-1"></button>'.repeat(ini);
+  for(let d=1;d<=total;d++){
+    const f=iso(new Date(y,m,d)), ps=S.parciales.filter(p=>p.fecha===f);
+    const dots=ps.slice(0,4).map(p=>`<i style="--c:${esc(mat(p.materia).color)}"></i>`).join('');
+    const tip=ps.map(p=>mat(p.materia).nombre+' · '+p.tipo).join('\n');
+    h+=`<button data-f="${f}" class="${f===iso(hoy())?'hoy':''}" title="${esc(tip)}">${d}<span class="dots">${dots}</span></button>`;
+  }
+  $('#cal').innerHTML=h;
+}
+$('#cal').onclick=e=>{const b=e.target.closest('[data-f]'); if(b) abrirForm(null,b.dataset.f);};
+$('#mesPrev').onclick=()=>{mes.setMonth(mes.getMonth()-1);renderCal();};
+$('#mesNext').onclick=()=>{mes.setMonth(mes.getMonth()+1);renderCal();};
+
+/* ---------- Formulario ---------- */
+let editId=null;
+$('#fTipo').innerHTML=TIPOS.map(t=>`<option>${t}</option>`).join('');
+function abrirForm(p,fecha){
+  if(!S.materias.length){alert('Primero agregá una materia en la pestaña Materias.');ver('materias');return;}
+  editId=p?p.id:null;
+  $('#dlgTitulo').textContent=p?'Editar parcial':'Agregar parcial';
+  $('#fMat').value=p?p.materia:S.materias[0].id;
+  $('#fTipo').value=p?p.tipo:TIPOS[0];
+  $('#fMod').value=p?p.modalidad:'Presencial';
+  $('#fFecha').value=p?p.fecha:(fecha||iso(hoy()));
+  $('#fHora').value=p?.hora||''; $('#fLugar').value=p?.lugar||'';
+  $('#fTemas').value=p?.temas||''; $('#fNota').value=p?.nota||'';
+  $('#dlg').showModal();
+}
+$('#btnNuevo').onclick=()=>abrirForm();
+$('#fCancel').onclick=()=>$('#dlg').close();
+$('#frm').onsubmit=e=>{
+  e.preventDefault();
+  const d={materia:$('#fMat').value,tipo:$('#fTipo').value,modalidad:$('#fMod').value,fecha:$('#fFecha').value,hora:$('#fHora').value,lugar:$('#fLugar').value.trim(),temas:$('#fTemas').value.trim(),nota:$('#fNota').value.trim()};
+  if(editId) Object.assign(S.parciales.find(x=>x.id===editId),d); else S.parciales.push({id:uid(),...d});
+  save(); $('#dlg').close(); render(); avisar();
+};
+
+/* ---------- Materias ---------- */
+function renderMaterias(){
+  $('#listaMaterias').innerHTML=S.materias.length?S.materias.map(m=>{
+    const n=S.parciales.filter(p=>p.materia===m.id).length;
+    return `<div class="mat" style="--c:${esc(m.color)}"><span class="sw"></span><span class="n">${esc(m.nombre)}</span><small>${n} parcial${n===1?'':'es'}</small><button class="btn small danger" data-m="${m.id}">Borrar</button></div>`;
+  }).join(''):'<div class="empty">Todavía no cargaste materias.</div>';
+  $('#fMat').innerHTML=S.materias.map(m=>`<option value="${m.id}">${esc(m.nombre)}</option>`).join('');
+}
+$('#listaMaterias').onclick=e=>{
+  const b=e.target.closest('[data-m]'); if(!b) return;
+  if(confirm('Se borra la materia y todos sus parciales. ¿Seguir?')){
+    S.materias=S.materias.filter(m=>m.id!==b.dataset.m); S.parciales=S.parciales.filter(p=>p.materia!==b.dataset.m); save(); render();
+  }
+};
+$('#mAdd').onclick=()=>{
+  const n=$('#mNombre').value.trim(); if(!n) return;
+  S.materias.push({id:uid(),nombre:n,color:$('#mColor').value}); $('#mNombre').value=''; save(); render();
+};
+
+/* ---------- Avisos del navegador ---------- */
+let AV={on:false,hechos:{}};
+try{AV=Object.assign(AV,JSON.parse(localStorage.getItem(KAV)))}catch(e){}
+const saveAV=()=>{try{localStorage.setItem(KAV,JSON.stringify(AV))}catch(e){}};
+function mostrar(titulo,cuerpo){
+  const opts={body:cuerpo,icon:'icon-192.png',badge:'icon-192.png'};
+  if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+    navigator.serviceWorker.ready.then(r=>r.showNotification(titulo,opts)).catch(()=>{try{new Notification(titulo,opts)}catch(e){}});
+  }else{try{new Notification(titulo,opts)}catch(e){}}
+}
+function avisar(){
+  if(!AV.on||!('Notification' in window)||Notification.permission!=='granted') return;
+  ordenados().forEach(p=>{
+    const n=dias(p.fecha); if(![0,1,3].includes(n)) return;
+    const k=p.id+'_'+n+'_'+p.fecha; if(AV.hechos[k]) return;
+    AV.hechos[k]=1;
+    mostrar(mat(p.materia).nombre+' · '+p.tipo,faltan(p.fecha)[0]+(p.hora?' a las '+p.hora+' hs':'')+' · '+p.modalidad);
+  });
+  saveAV();
+}
+if(!('Notification' in window)) $('#avisosBox').hidden=true;
+$('#avisosOn').checked=AV.on&&('Notification' in window)&&Notification.permission==='granted';
+$('#avisosOn').onchange=async e=>{
+  if(e.target.checked){
+    const r=await Notification.requestPermission();
+    if(r!=='granted'){e.target.checked=false;AV.on=false;saveAV();alert('El navegador no dio permiso para mostrar avisos. Podés activarlo en los ajustes del sitio.');return;}
+    AV.on=true; saveAV(); avisar();
+  }else{AV.on=false;saveAV();}
+};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();avisar();}});
+setInterval(()=>{render();avisar();},30*60*1000);
+
+/* ---------- Imagen con el listado ---------- */
+function rr(x,px,py,w,h,r){x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();}
+function ajustar(x,t,max){if(x.measureText(t).width<=max)return t;while(t.length>1&&x.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…';}
+async function imagen(){
+  const lista=ordenados().filter(p=>dias(p.fecha)>=0);
+  if(!lista.length){alert('No hay parciales próximos para armar la imagen.');return;}
+  try{await document.fonts.ready}catch(e){}
+  const grupos={}; lista.forEach(p=>(grupos[p.fecha]=grupos[p.fecha]||[]).push(p));
+  const fechas=Object.keys(grupos), W=1080, pad=56, F='Figtree,system-ui,sans-serif';
+  let H=pad+100+pad; fechas.forEach(f=>{H+=52+grupos[f].length*96+20});
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'); x.textBaseline='top';
+  x.fillStyle='#f4f7f7'; x.fillRect(0,0,W,H);
+  x.fillStyle='#16213e'; x.font='700 50px '+F; x.fillText('Mis parciales',pad,pad);
+  let y=pad+100;
+  fechas.forEach(f=>{
+    const t=fmt(f); x.fillStyle='#0f766e'; x.font='700 30px '+F; x.fillText(t.charAt(0).toUpperCase()+t.slice(1),pad,y); y+=52;
+    grupos[f].forEach(p=>{
+      const m=mat(p.materia);
+      x.fillStyle='#fff'; rr(x,pad,y,W-pad*2,84,14); x.fill();
+      x.strokeStyle='#d9e2e2'; x.lineWidth=2; x.stroke();
+      x.fillStyle=m.color; rr(x,pad,y,12,84,6); x.fill();
+      x.fillStyle='#16213e'; x.font='700 28px '+F; x.fillText(ajustar(x,m.nombre,W-pad*2-60),pad+34,y+12);
+      x.fillStyle='#5b6578'; x.font='500 22px '+F;
+      x.fillText(ajustar(x,p.tipo+' · '+p.modalidad+(p.hora?' · '+p.hora+' hs':''),W-pad*2-60),pad+34,y+48);
+      y+=96;
+    });
+    y+=20;
+  });
+  c.toBlob(async b=>{
+    const file=new File([b],'mis-parciales.png',{type:'image/png'});
+    try{ if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});return;} }catch(e){ if(e.name==='AbortError') return; }
+    const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='mis-parciales.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  },'image/png');
+}
+$('#btnImg').onclick=imagen;
+
+/* ---------- Respaldo ---------- */
+$('#exp').onclick=()=>{
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));
+  a.download='agenda-facultad-respaldo.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+$('#impBtn').onclick=()=>$('#imp').click();
+$('#imp').onchange=async e=>{
+  try{const d=JSON.parse(await e.target.files[0].text()); if(!d.materias||!d.parciales) throw 0;
+    if(confirm('Esto reemplaza lo que tenés cargado. ¿Seguir?')){S=d;save();render();}}
+  catch(err){alert('Ese archivo no parece un respaldo de la agenda.');}
+  e.target.value='';
+};
+
+function render(){renderMaterias();renderLista();renderCal();renderAviso();}
+render(); avisar();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
